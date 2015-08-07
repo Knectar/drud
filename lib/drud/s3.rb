@@ -42,7 +42,12 @@ module Drud
     # Get a client encrypted s3Object
     def get(s3Object, destination)
       key = Base64.decode64(@aws_utf_symmetric_key).encode('ascii-8bit')
-      options = { encryption_key: key }
+      if obj.metadata['x-amz-unencrypted-content-length'].nil?
+        options = { }
+      else
+        puts "Adding encryption key"
+        options = { encryption_key: aws_utf_symmetric_key }
+      end
       dest = File.join(destination, s3Object.key.split('/').last)
       cl = Humanize::Byte.new(s3Object.content_length)
       mb = "#{cl.to_m}".to_f.round(2)
